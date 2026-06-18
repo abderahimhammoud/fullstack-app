@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import './Auth.css';
 
+// 1. Define the base API URL (Falls back to localhost for local development)
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
   const [tab, setTab] = useState('home');
   const [apiStatus, setApiStatus] = useState('Checking...');
@@ -11,14 +14,15 @@ function App() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/health')
+    // 2. Add the base URL to your fetch requests
+    fetch(`${API_BASE_URL}/api/health`)
       .then((res) => res.json())
       .then((data) => setApiStatus(data.message || 'API is running'))
       .catch(() => setApiStatus('API unavailable'));
 
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('/api/auth/me', {
+      fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -35,7 +39,10 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+    // 3. Add the base URL to your endpoint variable
+    const endpoint = isLogin 
+        ? `${API_BASE_URL}/api/auth/login` 
+        : `${API_BASE_URL}/api/auth/signup`;
 
     const res = await fetch(endpoint, {
       method: 'POST',
