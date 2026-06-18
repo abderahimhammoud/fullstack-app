@@ -14,14 +14,14 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background: linear-gradient(180deg,#0f1724 0%, #1b2330 70%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: flex-start;
+  padding: 2.2rem 1rem;
+  color: #f7fafc;
 }
 
 .App-link {
@@ -34,5 +34,51 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+nav {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+
+nav button {
+  background: transparent;
+  border: 0;
+  color: #cfe7ff;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+nav button:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+section {
+  width: 100%;
+  max-width: 1000px;
+  background: transparent;
+  margin: 0.4rem auto 1.2rem;
+  text-align: left;
+  padding: 0.6rem;
+}
+
+section h1, section h2 {
+  margin: 0 0 0.6rem 0;
+}
+
+@media (max-width: 720px) {
+  .App-header {
+    padding: 1rem;
+  }
+  nav {
+    flex-wrap: wrap;
   }
 }

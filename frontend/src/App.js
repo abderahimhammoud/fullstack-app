@@ -12,6 +12,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   useEffect(() => {
     // 2. Add the base URL to your fetch requests
@@ -34,31 +35,51 @@ function App() {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // 3. Add the base URL to your endpoint variable
-    const endpoint = isLogin 
-        ? `${API_BASE_URL}/api/auth/login` 
-        : `${API_BASE_URL}/api/auth/signup`;
+    const endpoint = isLogin
+      ? `${API_BASE_URL}/api/auth/login`
+      : `${API_BASE_URL}/api/auth/signup`;
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      email: (formData.get('email') || '').toString().trim(),
+      password: (formData.get('password') || '').toString(),
+      ...(isLogin ? {} : { name: (formData.get('name') || '').toString().trim() }),
+    };
 
-    const data = await res.json();
-    setMessage(data.message || '');
-
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      setForm({ name: '', email: '', password: '' });
-      setTab('dashboard');
+    if (!payload.email || !payload.password || (!isLogin && !payload.name)) {
+      setMessage('Tous les champs doivent être remplis');
+      setMessageType('error');
+      return;
     }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      setMessage(data.message || '');
+      setMessageType(data.token ? 'success' : 'error');
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        setForm({ name: '', email: '', password: '' });
+        setTab('dashboard');
+      }
+    } catch (error) {
+      setMessage('Erreur de connexion au serveur');
+      setMessageType('error');
+    }
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const logout = () => {
@@ -128,11 +149,19 @@ function App() {
               <button type="submit">{isLogin ? 'Se connecter' : "S'inscrire"}</button>
             </form>
             <p>
-              <span className="auth-switch" onClick={() => setIsLogin(!isLogin)}>
+              <button
+                type="button"
+                className="auth-switch"
+                onClick={() => setIsLogin(!isLogin)}
+              >
                 {isLogin ? 'Créer un compte' : 'Déjà un compte ?'}
-              </span>
+              </button>
             </p>
-            {message && <p>{message}</p>}
+            {message && (
+              <p className={`auth-message ${messageType === 'success' ? 'success' : 'error'}`}>
+                {message}
+              </p>
+            )}
           </div>
         )}
 
