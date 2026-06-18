@@ -22,22 +22,37 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 
+mongoose.set('strictQuery', false);
+
+const startServer = () => {
+  app.use(express.static(path.join(__dirname, "..", "frontend", "build")));
+
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "frontend", "build", "index.html"));
+  });
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
 if (MONGO_URI) {
   mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch((err) => console.error("MongoDB connection error:", err.message));
+    .connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+    })
+    .then(() => {
+      console.log("MongoDB connected");
+      startServer();
+    })
+    .catch((err) => {
+      console.error("MongoDB connection error:", err.message);
+      process.exit(1);
+    });
 } else {
   console.warn("MONGO_URI is not defined");
+  startServer();
 }
-
-app.use(express.static(path.join(__dirname, "..", "frontend", "build")));
-
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "frontend", "build", "index.html"));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 module.exports = app;
